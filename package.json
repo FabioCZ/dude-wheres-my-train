@@ -1,0 +1,29 @@
+{
+  "name": "dude-wheres-my-train",
+  "version": "1.0.0",
+  "description": "Keeping the CTA accountable",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FabioCZ/dude-wheres-my-train.git"
+  },
+  "keywords": [
+    "cta",
+    "node",
+    "chicago"
+  ],
+  "author": "Fabio Gottlicher",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FabioCZ/dude-wheres-my-train/issues"
+  },
+  "homepage": "https://github.com/FabioCZ/dude-wheres-my-train#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "node-fetch": "^3.0.0"
+  },
+  "type": "module"
+}
