@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 import express from 'express';
 
 // setup
-const dataCollectionIntervalMs = 1000 * 15 * 1
+const dataCollectionIntervalMs = 1000 * 60 * 0.25
 const port = 3000
 const targetStationId = 40570.0 // California blue line, and yep the ID is decimal
 const northBoundDestinations = ["O'Hare", "Rosemont", "Jefferson Park"]
@@ -33,12 +33,12 @@ function addOrUpdateArrival(run, isNorthBound, date) {
     for(let arrival of arrivals) {
         if (arrival.run == run &&
             arrival.isNorthBound == isNorthBound &&
-            arrival.date > new Date()) {
+            arrival.date > new Date(new Date() - 1000 * 60 * 30)) {
                 arrival.date = date
                 return
             }
     }
-    const newArrival = { run, isNorthBound, date }
+    const newArrival = { run, isNorthBound, date, initialPrediction: date }
     arrivals.push(newArrival)
 }
 
