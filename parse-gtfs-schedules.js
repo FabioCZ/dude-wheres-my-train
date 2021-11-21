@@ -2,8 +2,8 @@
 // Make sure to include calendar + stop_times + trips files from GTFS in runtime directory
 import fs from 'fs'
 import readline from 'readline'
-const stationNorthBound = "30111"
-const stationSouthBound = "30112"
+const stopIdNorthBound = "30111"
+const stopIdSouthBound = "30112"
 const routeName = "Blue"
 const calendarFile = "calendar.txt"
 const stopTimesFiles = "stop_times.txt"
@@ -79,11 +79,11 @@ async function parseDeparturesForStations() {
 
     for await (const line of rl) {
         const split = line.split(",")
-        if (split[0] in tripsToServices && (split[3] == stationSouthBound || split[3] == stationNorthBound)) {
+        if (split[0] in tripsToServices && (split[3] == stopIdSouthBound || split[3] == stopIdNorthBound)) {
             const days = servicesToDays[tripsToServices[split[0]]]
             for(var dayIdx = 0; dayIdx < 7; dayIdx++) {
                 if (days[dayIdx]) {
-                    const destArr = split[3] == stationSouthBound ? southBoundTimes[dayIdx] : northBoundTimes[dayIdx]
+                    const destArr = split[3] == stopIdSouthBound ? southBoundTimes[dayIdx] : northBoundTimes[dayIdx]
                     if (!destArr.includes(split[2])) {
                         destArr.push(split[2])
                     }
@@ -93,8 +93,8 @@ async function parseDeparturesForStations() {
     }
 
     for(var dayIdx = 0; dayIdx < 7; dayIdx++) {
-        writeTimesToFile(southBoundTimes[dayIdx], `${stationSouthBound}_${dayIdx}.txt`)
-        writeTimesToFile(northBoundTimes[dayIdx], `${stationNorthBound}_${dayIdx}.txt`)
+        writeTimesToFile(southBoundTimes[dayIdx], `${stopIdSouthBound}_${dayIdx}.txt`)
+        writeTimesToFile(northBoundTimes[dayIdx], `${stopIdNorthBound}_${dayIdx}.txt`)
     }
 }
 

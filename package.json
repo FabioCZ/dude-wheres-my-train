@@ -4,7 +4,8 @@
   "description": "Keeping the CTA accountable",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -23,7 +24,11 @@
   "homepage": "https://github.com/FabioCZ/dude-wheres-my-train#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "firebase-admin": "^10.0.0",
     "node-fetch": "^3.0.0"
   },
-  "type": "module"
+  "type": "module",
+  "engines": {
+    "node": "16.x"
+  }
 }
