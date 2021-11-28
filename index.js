@@ -9,7 +9,7 @@ const dataCollectionIntervalMs = 1000 * 60 * 2 // 2 min
 const oneHourMs = 60 * 60 * 1000
 const oneDayMs = 24 * oneHourMs // 24hr
 const arrivalMinuteToleranceMs = 30 * 60 * 1000 // 30 min
-const port = 3000
+const port = 80
 const targetStationId = 40570.0 // California blue line, and yep the ID is decimal
 const stopIdNorthBound = "30111"
 const stopdIdSouthBound = "30112"
@@ -27,6 +27,10 @@ const uptimeCollection = db.collection('uptime')
 function collectDataAndScheduleNext() {
     collectImmediateData()
     setInterval(collectImmediateData, dataCollectionIntervalMs)
+}
+
+function zeroPad(n) {
+    return String(n).padStart(2, '0')
 }
 
 function predictionToDate(pred) {
@@ -55,7 +59,7 @@ async function queryForExisting(run, stopId, date) {
 async function addOrUpdateArrival(run, stopId, date) {
     const existing = await queryForExisting(run, stopId, date)
     if (existing == null) {
-        const id = `${stopId}_${run}_${date.getFullYear()}${date.getMonth() + 1}${date.getDate()}-${date.getHours()}${date.getMinutes()}`
+        const id = `${stopId}_${run}_${date.getFullYear()}${date.getMonth() + 1}${date.getDate()}-${zeroPad(date.getHours())}${zeroPad(date.getMinutes())}`
         const arrival = { id, run, stopId }
         arrival.arrival = Timestamp.fromDate(date)
         arrival.initialPrediction = Timestamp.fromDate(date)
@@ -69,7 +73,7 @@ async function addOrUpdateArrival(run, stopId, date) {
 
 async function logUptime() {
     const date = new Date()
-    const currId = `${date.getFullYear()}${date.getMonth() + 1}${date.getDate()}-${date.getHours()}00`
+    const currId = `${date.getFullYear()}${date.getMonth() + 1}${date.getDate()}-${zeroPad(date.getHours())}00`
     const existingRef = uptimeCollection.doc(currId)
     const existingDoc = await existingRef.get();
     if (existingDoc.exists) {
@@ -118,17 +122,35 @@ function cloneWithDateConversion(obj) {
     return clone
 }
 
+async function buildUpTimeStats(dateString) {
+    const uptimePerc = []
+    for(let i = 0; i < 24; i++) {
+        const id = `${dateString}-${zeroPad(i)}00`
+        const ref = uptimeCollection.doc(id)
+        const doc = await ref.get()
+        if (doc.exists) {
+            const count = doc.data().count
+            const expected = doc.data().hourlyTarget
+            uptimePerc.push(count / expected)
+        } else {
+            uptimePerc.push(0)
+        }
+    }
+    return uptimePerc
+}
+
 async function getStatsForDate(dateString) {
     const date = new Date(parseInt(dateString.substring(0, 4)), parseInt(dateString.substring(4, 6)) - 1, parseInt(dateString.substring(6, 8)))
     console.log(`Querying for date: ${date}`)
-    const arrivals = await arrivalCollection
+    const arrivalsQueried = await arrivalCollection
         .where("arrival", ">=", Timestamp.fromDate(date))
         .where("arrival", "<=", Timestamp.fromDate(new Date(date.getTime() + oneDayMs)))
         .orderBy("arrival", "asc")
         .get()
-    console.log(`Arrivals: ${arrivals.docs.length}`)
-    //TODO generate stats
-    return arrivals.docs.map(x => cloneWithDateConversion(x.data()))
+    const resultObj = {}
+    resultObj.arrivals = arrivalsQueried.docs.map(x => cloneWithDateConversion(x.data()))
+    resultObj.uptimeLog = await buildUpTimeStats(dateString)
+    return resultObj
 }
 
 // Endpoints
