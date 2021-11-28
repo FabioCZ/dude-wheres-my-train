@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 import express from 'express'
-import readline from 'readline'
+import fs from 'fs/promises'
 import { initializeApp, applicationDefault, cert } from 'firebase-admin/app'
 import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore'
 
@@ -12,7 +12,7 @@ const arrivalMinuteToleranceMs = 30 * 60 * 1000 // 30 min
 const port = 3000
 const targetStationId = 40570.0 // California blue line, and yep the ID is decimal
 const stopIdNorthBound = "30111"
-const stopdIdSouthBound = "30112"
+const stopIdSouthBound = "30112"
 const northBoundDestinations = ["O'Hare", "Rosemont", "Jefferson Park"]
 const southBoundDestinations = ["Forest Park", "UIC"]
 const app = express()
@@ -95,7 +95,7 @@ async function collectImmediateData() {
             .filter(x => x.Predictions.some(pred => pred[0] == targetStationId))
 
         for (let train of actualTrains) {
-            const stopId = northBoundDestinations.some(x => train.DestName.startsWith(x)) ? stopIdNorthBound : stopdIdSouthBound
+            const stopId = northBoundDestinations.some(x => train.DestName.startsWith(x)) ? stopIdNorthBound : stopIdSouthBound
             const predictionStr = train.Predictions.find(x => x[0] == targetStationId)[2]
             const predictionDate = predictionToDate(predictionStr)
             if (predictionDate != null) {
@@ -122,8 +122,8 @@ function cloneWithDateConversion(obj) {
     return clone
 }
 
-async function buildUpTimeStats(dateString) {
-    const uptimePerc = []
+async function buildUptimeStats(dateString) {
+    const uptimePerc = {}
     for(let i = 0; i < 24; i++) {
         const id = `${dateString}-${zeroPad(i)}00`
         const ref = uptimeCollection.doc(id)
@@ -131,26 +131,54 @@ async function buildUpTimeStats(dateString) {
         if (doc.exists) {
             const count = doc.data().count
             const expected = doc.data().hourlyTarget
-            uptimePerc.push(count / expected)
+            uptimePerc[i] = (count / expected)
         } else {
-            uptimePerc.push(0)
+            uptimePerc[i] = 0
         }
     }
     return uptimePerc
 }
 
+async function getScheduledData(stopId, day) {
+    const path = `./schedules/${stopId}_${day}.json`
+    const sched = JSON.parse(await fs.readFile(path, 'utf-8'))
+    return sched
+}
+
+function getOnTimePerformance(arrivals, scheduledForStop) {
+    const result = {}
+    for (let i = 0; i < 24; i++) {
+        const actualArrivals = arrivals.filter(x => x.arrival.getHours() == i).length
+        const scheduled = scheduledForStop.hourlyTrainCount[zeroPad(i)]
+        result[i] = { scheduled, actualArrivals }
+    }
+    return result
+}
+
+
 async function getStatsForDate(dateString) {
     const date = new Date(parseInt(dateString.substring(0, 4)), parseInt(dateString.substring(4, 6)) - 1, parseInt(dateString.substring(6, 8)))
+    // Days are zero-indexed, starting with Monday == 0
+    const dayOfWeek = (date.getDay() == 0) ? 6 : date.getDay() - 1
     console.log(`Querying for date: ${date}`)
     const arrivalsQueried = await arrivalCollection
         .where("arrival", ">=", Timestamp.fromDate(date))
         .where("arrival", "<=", Timestamp.fromDate(new Date(date.getTime() + oneDayMs)))
         .orderBy("arrival", "asc")
         .get()
-    const resultObj = {}
-    resultObj.arrivals = arrivalsQueried.docs.map(x => cloneWithDateConversion(x.data()))
-    resultObj.uptimeLog = await buildUpTimeStats(dateString)
-    return resultObj
+    const arrivals = arrivalsQueried.docs.map(x => cloneWithDateConversion(x.data()))
+    const res = { date, arrivals: {}, arrivalCt: {}, scheduled: {}, onTimePerformance: {} }
+    res.arrivals[stopIdNorthBound] = arrivals.filter(x => x.stopId == stopIdNorthBound)
+    res.arrivals[stopIdSouthBound] = arrivals.filter(x => x.stopId == stopIdSouthBound)
+    res.arrivalCt[stopIdNorthBound] = res.arrivals[stopIdNorthBound].length,
+    res.arrivalCt[stopIdSouthBound] = res.arrivals[stopIdSouthBound].length,
+    res.arrivalCt.total = res.arrivals[stopIdNorthBound].length + res.arrivals[stopIdSouthBound].length
+    res.scheduled[stopIdNorthBound] = await getScheduledData(stopIdNorthBound, dayOfWeek)
+    res.scheduled[stopIdSouthBound] =  await getScheduledData(stopIdSouthBound, dayOfWeek)
+    res.uptimeLog = await buildUptimeStats(dateString)
+    res.onTimePerformance[stopIdNorthBound] = getOnTimePerformance(res.arrivals[stopIdNorthBound], res.scheduled[stopIdNorthBound])
+    res.onTimePerformance[stopIdSouthBound] = getOnTimePerformance(res.arrivals[stopIdSouthBound], res.scheduled[stopIdSouthBound]) 
+    return res
 }
 
 // Endpoints
@@ -162,4 +190,4 @@ app.get('/v1/stats/:date', async (req, res) => {
 
 //launching code
 app.listen(port, () => { console.log(`Starting express app on port: ${port}`)})
-collectDataAndScheduleNext()
+// collectDataAndScheduleNext()
