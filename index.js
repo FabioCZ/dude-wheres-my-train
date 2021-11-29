@@ -4,6 +4,32 @@ import fs from 'fs/promises'
 import { initializeApp, applicationDefault, cert } from 'firebase-admin/app'
 import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore'
 
+//returns date as ISO8601 string with local timezone instead of GMT
+function toIsoString(date) {
+    var tzo = -date.getTimezoneOffset(),
+        dif = tzo >= 0 ? '+' : '-',
+        pad = function(num) {
+            var norm = Math.floor(Math.abs(num));
+            return (norm < 10 ? '0' : '') + norm;
+        };
+  
+    return date.getFullYear() +
+        '-' + pad(date.getMonth() + 1) +
+        '-' + pad(date.getDate()) +
+        'T' + pad(date.getHours()) +
+        ':' + pad(date.getMinutes()) +
+        ':' + pad(date.getSeconds()) +
+        dif + pad(tzo / 60) +
+        ':' + pad(tzo % 60);
+  }
+function jsonDateReplacer(key, value) {
+    if (this[key] instanceof Date) {
+        return toIsoString(this[key]);
+    } else {
+        return value
+    }
+}
+
 // setup
 const dataCollectionIntervalMs = 1000 * 60 * 2 // 2 min
 const oneHourMs = 60 * 60 * 1000
@@ -18,6 +44,7 @@ const southBoundDestinations = ["Forest Park", "UIC"]
 const app = express()
 // process.env.GOOGLE_APPLICATION_CREDENTIALS="./keys/dude-wheres-my-train-771657dd0357.json"
 app.use(express.json())
+app.set('json replacer', jsonDateReplacer)
 const ctaUrl = 'https://www.transitchicago.com/traintracker/PredictionMap/tmTrains.aspx?line=B&MaxPredictions=6'
 initializeApp({credential: applicationDefault()});
 const db = getFirestore();
@@ -180,6 +207,7 @@ async function getStatsForDate(dateString) {
     res.onTimePerformance[stopIdSouthBound] = getOnTimePerformance(res.arrivals[stopIdSouthBound], res.scheduled[stopIdSouthBound]) 
     return res
 }
+  
 
 // Endpoints
 app.get('/v1/stats/:date', async (req, res) => {
@@ -190,4 +218,4 @@ app.get('/v1/stats/:date', async (req, res) => {
 
 //launching code
 app.listen(port, () => { console.log(`Starting express app on port: ${port}`)})
-collectDataAndScheduleNext()
+// collectDataAndScheduleNext()
