@@ -7,18 +7,18 @@
             th { border: 2px solid black; border-collapse: collapse; }
             </style>
     </head>
-    <body>
+    <body onload="onLoad()">
 
         <h2>Chicago 'L' Train train reliability</h2>
         <h3>California Blue Line Stats</h3>
         <br/>
         <span>Pick a date:</span>
-        <input type="date" id="start" name="selected-date" min="2021-11-29" onchange="dateChanged(event);" autocomplete="off">
+        <input type="date" id="date-picker" name="selected-date" min="2021-11-28" onchange="dateChanged(event.target.value);" autocomplete="off">
         <div id="res">
             
         </div>
         <br/>
-        <span>Notes: Data quality is 0-100%, denotes how frequently data was collected during that hour. I.e. don't trust data unless it's 100%.</span>
+        <span>Notes: Data quality is 0-100%, it denotes the uptime of the data collector for that hour. I.e. don't trust data unless it's 100%.</span>
         <br/>
         <span>API: chitrain.gottlicher.com/v1/stats/{date}, where date is YYYYMMDD, e.g. v1/stats/20211128</span>
     </body>

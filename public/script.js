@@ -5,7 +5,7 @@ function makeElement(htmlString) {
 }
 
 function makePerfTable(name, perf, uptime) {
-    var table = `<div><h3>${name}</h3><table><tr><th>Hour</th><th>Scheduled</th><th>ActualArrivals</th><th>% of trains</th><th>Data Quality</th></tr>`
+    var table = `<div><h3>${name}</h3><table><tr><th>Hour</th><th>Scheduled</th><th>Actual Arrivals</th><th>% of Trains</th><th>Data Quality</th></tr>`
     var totalScheduled = 0
     var totalActual = 0
     var totalUptime = 0
@@ -15,8 +15,8 @@ function makePerfTable(name, perf, uptime) {
         const actual = perf[i].actualArrivals
         totalActual += actual
         const percentage = ((actual/scheduled)*100).toFixed(1)
-        const dataQuality = (uptime[i] * 100).toFixed(1)
-        totalUptime += uptime[i]
+        const dataQuality = (Math.min(uptime[i],1) * 100).toFixed(1)
+        totalUptime += Math.min(uptime[i],1)
         table += `<tr><td>${i}</td><td>${scheduled}</td><td>${actual}</td><td>${percentage}%</td><td>${dataQuality}%</tr>`
     }
     const totalPercentage = ((totalActual/totalScheduled)*100).toFixed(1)
@@ -37,9 +37,17 @@ function onDataFetched(date, stats) {
     resDiv.appendChild(makePerfTable("To Forest Park", southBoundPerf, stats.uptimeLog))
 }
 
-function dateChanged(e) {
-    const dtString = e.target.value.replaceAll("-","")
+// date - value of date picker event, YYYY-MM-DD
+function dateChanged(date) {
+    const dtString = date.replaceAll("-","")
     fetch(`v1/stats/${dtString}`)
     .then(res => res.json())
-    .then(data => onDataFetched(e.target.value, data))
+    .then(data => onDataFetched(date, data))
+}
+
+function onLoad() {
+    const d = new Date()
+    const dateString = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, 0)}-${(d.getDate() - 1).toString().padStart(2, 0)}`
+    dateChanged(dateString)
+    document.getElementById("date-picker").value = dateString
 }

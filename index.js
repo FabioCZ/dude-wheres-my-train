@@ -182,7 +182,6 @@ function getOnTimePerformance(arrivals, scheduledForStop) {
     return result
 }
 
-
 async function getStatsForDate(dateString) {
     const date = new Date(parseInt(dateString.substring(0, 4)), parseInt(dateString.substring(4, 6)) - 1, parseInt(dateString.substring(6, 8)))
     // Days are zero-indexed, starting with Monday == 0
@@ -204,18 +203,40 @@ async function getStatsForDate(dateString) {
     res.scheduled[stopIdSouthBound] =  await getScheduledData(stopIdSouthBound, dayOfWeek)
     res.uptimeLog = await buildUptimeStats(dateString)
     res.onTimePerformance[stopIdNorthBound] = getOnTimePerformance(res.arrivals[stopIdNorthBound], res.scheduled[stopIdNorthBound])
-    res.onTimePerformance[stopIdSouthBound] = getOnTimePerformance(res.arrivals[stopIdSouthBound], res.scheduled[stopIdSouthBound]) 
+    res.onTimePerformance[stopIdSouthBound] = getOnTimePerformance(res.arrivals[stopIdSouthBound], res.scheduled[stopIdSouthBound])
+
+    // Persist data to file cache if yesterday or older
+    const today = new Date()
+    if (today.getFullYear() != date.getFullYear() || today.getMonth() != date.getMonth() || today.getDate() != date.getDate()) {
+        try {
+            await fs.access(path)
+            // Good to go if file already exists
+        } catch(e) {
+            await fs.writeFile(`./history/${dateString}.json`, JSON.stringify(res))
+        }
+    }
     return res
 }
   
 
 // Endpoints
 app.get('/v1/stats/:date', async (req, res) => {
-    const arrivals = await getStatsForDate(req.params.date)
-    res.json(arrivals)
+    const date = req.params.date
+    try {
+        const path = `./history/${date}.json`
+        await fs.access(path) // will throw if file doesn't exist
+        const arrivalsJson = await fs.readFile(path, 'utf-8')
+        res.setHeader('Content-Type', 'application/json');
+        res.send(arrivalsJson)
+        console.log(`Using cached data for ${date}`)
+    } catch(e) {
+        console.log(`Retrieving fresh data for ${date}`)
+        const arrivals = await getStatsForDate(date)
+        res.json(arrivals)
+    }
 })
 
 //launching code
 app.listen(port, () => { console.log(`Starting express app on port: ${port}`)})
 app.use(express.static('public'))
-collectDataAndScheduleNext()
+//collectDataAndScheduleNext()
