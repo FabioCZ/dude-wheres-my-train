@@ -215,7 +215,7 @@ app.get('/v1/stats/:date', async (req, res) => {
     res.json(arrivals)
 })
 
-
 //launching code
 app.listen(port, () => { console.log(`Starting express app on port: ${port}`)})
-collectDataAndScheduleNext()
+app.use(express.static('public'))
+//collectDataAndScheduleNext()
