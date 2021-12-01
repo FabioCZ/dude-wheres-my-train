@@ -94,8 +94,8 @@ async function parseDeparturesForStations() {
 
     for(var dayIdx = 0; dayIdx < 7; dayIdx++) {
         // Days are zero-indexed, starting with Monday == 0
-        writeTimesToFile(southBoundTimes[dayIdx], `${stopIdSouthBound}_${dayIdx}.json`)
-        writeTimesToFile(northBoundTimes[dayIdx], `${stopIdNorthBound}_${dayIdx}.json`)
+        writeTimesToFile(southBoundTimes[dayIdx], `schedules/${stopIdSouthBound}_${dayIdx}.json`)
+        writeTimesToFile(northBoundTimes[dayIdx], `schedules/${stopIdNorthBound}_${dayIdx}.json`)
     }
 }
 
