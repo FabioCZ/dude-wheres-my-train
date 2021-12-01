@@ -86,7 +86,7 @@ async function queryForExisting(run, stopId, date) {
 async function addOrUpdateArrival(run, stopId, date) {
     const existing = await queryForExisting(run, stopId, date)
     if (existing == null) {
-        const id = `${stopId}_${run}_${date.getFullYear()}${date.getMonth() + 1}${date.getDate()}-${zeroPad(date.getHours())}${zeroPad(date.getMinutes())}`
+        const id = `${stopId}_${run}_${date.getFullYear()}${zeroPad(date.getMonth() + 1)}${zeroPad(date.getDate())}-${zeroPad(date.getHours())}${zeroPad(date.getMinutes())}`
         const arrival = { id, run, stopId }
         arrival.arrival = Timestamp.fromDate(date)
         arrival.initialPrediction = Timestamp.fromDate(date)
@@ -100,7 +100,7 @@ async function addOrUpdateArrival(run, stopId, date) {
 
 async function logUptime() {
     const date = new Date()
-    const currId = `${date.getFullYear()}${date.getMonth() + 1}${date.getDate()}-${zeroPad(date.getHours())}00`
+    const currId = `${date.getFullYear()}${zeroPad(date.getMonth() + 1)}${zeroPad(date.getDate())}-${zeroPad(date.getHours())}00`
     const existingRef = uptimeCollection.doc(currId)
     const existingDoc = await existingRef.get();
     if (existingDoc.exists) {
