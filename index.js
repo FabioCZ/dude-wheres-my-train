@@ -212,7 +212,7 @@ async function getStatsForDate(dateString) {
             await fs.access(path)
             // Good to go if file already exists
         } catch(e) {
-            await fs.writeFile(`./history/${dateString}.json`, JSON.stringify(res))
+            await fs.writeFile(`./history/${dateString}.json`, JSON.stringify(res, jsonDateReplacer))
         }
     }
     return res
