@@ -32,9 +32,8 @@ function onDataFetched(date, stats) {
     }
     const northBoundPerf = stats.onTimePerformance["30111"]
     const southBoundPerf = stats.onTimePerformance["30112"]
-    resDiv.appendChild(makeElement(`<h3>Data for ${date}</h3>`))
-    resDiv.appendChild(makePerfTable("To O'Hare", northBoundPerf, stats.uptimeLog))
-    resDiv.appendChild(makePerfTable("To Forest Park", southBoundPerf, stats.uptimeLog))
+    resDiv.appendChild(makePerfTable(`${date} - To O'Hare`, northBoundPerf, stats.uptimeLog))
+    resDiv.appendChild(makePerfTable(`${date} - To Forest Park`, southBoundPerf, stats.uptimeLog))
 }
 
 // date - value of date picker event, YYYY-MM-DD
