@@ -5,7 +5,7 @@ function makeElement(htmlString) {
 }
 
 function makePerfTable(name, perf, uptime) {
-    var table = `<div><h3>${name}</h3><table><tr><th>Hour</th><th>Scheduled</th><th>Actual Arrivals</th><th>% of Trains</th><th>Data Quality</th></tr>`
+    var table = `<div><h3>${name}</h3><table><tr><th>Hour</th><th>Scheduled</th><th>Actual Arrivals</th><th>% of Trains</th><th class="spacer"> </th><th>Data Quality</th></tr>`
     var totalScheduled = 0
     var totalActual = 0
     var totalUptime = 0
@@ -17,11 +17,11 @@ function makePerfTable(name, perf, uptime) {
         const percentage = ((actual/scheduled)*100).toFixed(1)
         const dataQuality = (Math.min(uptime[i],1) * 100).toFixed(1)
         totalUptime += Math.min(uptime[i],1)
-        table += `<tr><td>${i}</td><td>${scheduled}</td><td>${actual}</td><td>${percentage}%</td><td>${dataQuality}%</tr>`
+        table += `<tr><td>${i}</td><td>${scheduled}</td><td>${actual}</td><td>${percentage}%</td><td class="spacer"> </td><td>${dataQuality}%</tr>`
     }
     const totalPercentage = ((totalActual/totalScheduled)*100).toFixed(1)
     const totalQuality = ((totalUptime / 24) * 100).toFixed(1)
-    table += `<tr><td>Total</td><td>${totalScheduled}</td><td>${totalActual}</td><td>${totalPercentage}%</td><td>${totalQuality}%</td></tr></table></div>`
+    table += `<tr><td>Total</td><td>${totalScheduled}</td><td>${totalActual}</td><td>${totalPercentage}%</td><td class="spacer"> </td><td>${totalQuality}%</td></tr></table></div>`
     return makeElement(table)
 }
 
