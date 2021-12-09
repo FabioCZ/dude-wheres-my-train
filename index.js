@@ -207,6 +207,7 @@ async function getStatsForDate(dateString) {
 
     // Persist data to file cache if yesterday or older
     const today = new Date()
+    today.setHours(0, 0, 0, 0)
     if (date < today) {
         try {
             await fs.access(path)
