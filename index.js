@@ -207,7 +207,7 @@ async function getStatsForDate(dateString) {
 
     // Persist data to file cache if yesterday or older
     const today = new Date()
-    if (today.getFullYear() != date.getFullYear() || today.getMonth() != date.getMonth() || today.getDate() != date.getDate()) {
+    if (date < today) {
         try {
             await fs.access(path)
             // Good to go if file already exists
