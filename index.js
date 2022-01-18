@@ -45,7 +45,7 @@ const app = express()
 // process.env.GOOGLE_APPLICATION_CREDENTIALS="./keys/dude-wheres-my-train-771657dd0357.json"
 app.use(express.json())
 app.set('json replacer', jsonDateReplacer)
-const ctaUrl = 'https://www.transitchicago.com/traintracker/PredictionMap/tmTrains.aspx?line=B&MaxPredictions=6'
+const ctaUrl = 'https://www.transitchicago.com/traintracker/PredictionMap/tmTrains.aspx?line=B&MaxPredictions=8'
 initializeApp({credential: applicationDefault()});
 const db = getFirestore();
 const arrivalCollection = db.collection('arrivals')
