@@ -31,7 +31,7 @@ function jsonDateReplacer(key, value) {
 }
 
 // setup
-const dataCollectionIntervalMs = 1000 * 60 * 2 // 2 min
+const dataCollectionIntervalMs = 1000 * 60 * 1 // 2 min
 const oneHourMs = 60 * 60 * 1000
 const oneDayMs = 24 * oneHourMs // 24hr
 const arrivalMinuteToleranceMs = 30 * 60 * 1000 // 30 min
