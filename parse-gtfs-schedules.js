@@ -2,6 +2,8 @@
 // Make sure to include calendar + stop_times + trips files from GTFS in runtime directory
 import fs from 'fs'
 import readline from 'readline'
+// const stopIdNorthBound = "30179" // Pulaski to ord
+// const stopIdSouthBound = "30180" // Pulaski to fp
 const stopIdNorthBound = "30111"
 const stopIdSouthBound = "30112"
 const routeName = "Blue"
@@ -64,6 +66,7 @@ function writeTimesToFile(times, fileName) {
         hourlyTrainCount: perHour
     }
 
+    console.log("Total for " + fileName + ":" + times.length)
     const writer = fs.createWriteStream(fileName, { flags: "w" })
     writer.write(JSON.stringify(outputObj))
     writer.close()
