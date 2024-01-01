@@ -85,12 +85,16 @@ async function parseDeparturesForStations() {
         if (split[0] in tripsToServices && (split[3] == stopIdSouthBound || split[3] == stopIdNorthBound)) {
             const days = servicesToDays[tripsToServices[split[0]]]
             for(var dayIdx = 0; dayIdx < 7; dayIdx++) {
+                try {
                 if (days[dayIdx]) {
                     const destArr = split[3] == stopIdSouthBound ? southBoundTimes[dayIdx] : northBoundTimes[dayIdx]
                     if (!destArr.includes(split[2])) {
                         destArr.push(split[2])
                     }
                 }
+            } catch(e) {
+                console.log(e)
+            }
             }
         }
     }
